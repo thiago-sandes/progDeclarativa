@@ -1,60 +1,56 @@
--- Função que verifica se é algum tipo de espaço no char.
-isSpace :: Char -> Bool
-isSpace ch = ch == ' ' || ch == '\n' || ch == '\t' || ch == '\r' || ch == '\f' || ch == '\v'
+import Prelude as Prelude
 
 
--- Função que retorna o tamanho de uma lista qualquer
-leng :: [t] -> Int
-leng [] = 0
-leng (x:xs) = (leng xs) + 1
 
 
--- Função que retorna uma matriz de caracteres
-takeWord :: [Char] -> [[Char]]
-takeWord str = case dropWhile isSpace str of
-  "" -> []
-  str' -> word : takeWord str''
-    where (word, str'') = break isSpace str'
+--Retorna True se palav cabe dentro de linha.
+cabe :: String -> String -> Int -> Bool
+
+cabe palav linha n |(capacidadeLinha >= tamPalav) = True
+                   | otherwise = False
+                       where tamPalav = (Prelude.length palav) + 1 -- tamanho da palavra. +1 ' '
+                             tamLinha = (Prelude.length linha) -- desconta '\n'
+                             capacidadeLinha = (n - tamLinha)
 
 
--- recebe uma matriz de caracteres e retorna uma lista de caracteres
-matrixToList :: [[Char]] -> [Char]
-matrixToList [] = []
-matrixToList [a] = a
-matrixToList (x:xs) = x ++ " " ++ matrixToList xs
-
-{-
-  verifica que a concatenação de suas listas de caracteres ultrapassam ou não
-  um limite dado e processa de acordo, concatenando-as sem ultrapassar o limite.
--}
-checkWord :: [Char] -> [[Char]] -> Int -> [Char]
-checkWord str mtx size
-  | ((leng new_str) - 1) < size = new_str ++ " " ++ (fill tail_mtx_list size)
-  | ((leng new_str) - 1) == size = new_str ++ "\n" ++ (fill tail_mtx_list size)
-  | otherwise = str ++ "\n" ++ (fill mtx_list size)
-  where
-    fst_mtx = head mtx
-    tail_mtx = tail mtx
-    new_str = str ++ " " ++ fst_mtx
-    mtx_list = matrixToList mtx
-    tail_mtx_list = matrixToList tail_mtx
 
 
--- função principal para receber uma string e um tamanho e imprimir as palavras
--- sem quebrar essa regra
-fill :: [Char] -> Int -> [Char]
+
+--Percorre palavra por palavra para criar novo texto com no maximo n chars por linha.
+-- Recebe lista de palavras do texto e lista para guardar saida.
+processarTexto :: [String] -> [String] -> Int -> [String]
+
+processarTexto [] lista _ = lista
+
+processarTexto (x:xs) lista n | (lista == []) = processarTexto xs (lista ++ [x]) n
+                              | (ok == True) = processarTexto xs [(y ++ " " ++ x)] n
+                              | otherwise = y : processarTexto (x:xs) ys n
+                              where y  = head lista
+                                    ys = tail lista
+                                    ok = cabe x y n -- verifica se a palavra cabe na linha
+
+                               
+                              
+--Recebe lista de strings e retorna string, resultado da concatenacao dos elem. da lista, 
+--separados por '\n'
+finalizarTexto :: String -> [String] -> String
+
+finalizarTexto texto [] = texto
+
+finalizarTexto texto (x:xs) | (xs /= []) = finalizarTexto (texto ++ (x ++ "\n")) xs
+                            | otherwise  = texto ++ x -- no caso da ultima linha
+
+
+
+--Funcao principal
+fill :: String -> Int -> String
+
 fill [] _ = []
-fill _ 0 = []
-fill str size
-  | ((leng (matrix_complete) == 1) || (leng str <= size)) = str
-  -- (primeiro ++ segundo) ++ (terceiro caso < size)
-  | (((leng fst_snd)-1) <= size) = (checkWord fst_snd snd_tail size)
-  | otherwise = fst_head ++ "\n" ++(fill fst_tail_list size)
-  where
-    matrix_complete = takeWord str
-    fst_head = (head matrix_complete)
-    fst_tail = (tail matrix_complete)
-    fst_tail_list = (matrixToList (tail matrix_complete))
-    snd_tail = (tail fst_tail)
-    snd_head = (head fst_tail)
-    fst_snd =  fst_head ++ " " ++ snd_head
+
+fill texto n = textoFinal
+               where listaPalav = Prelude.words texto -- Recebe lista com palavras do texto
+                     textoProcessado = processarTexto listaPalav [] n
+                     textoFinal  = finalizarTexto [] textoProcessado
+  
+
+
