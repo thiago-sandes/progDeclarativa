@@ -18,28 +18,7 @@ fullExtend n partialSolution                         -- recebe o tamanho da solu
   | otherwise                       = foldr propose Nothing [0..(n-1)] -- de outra forma, concatena os elementos e aplica a função que verifica uma nova entrada
   where
     propose _ (Just xs) = Just xs                           -- Retorna a entrada
-    propose x Nothing   = extend partialSolution x >>= fullExtend n -- 
+    propose x Nothing   = extend partialSolution x >>= fullExtend n -- concatena as listas e retorna
 
-nQueens :: Int -> Maybe Solution
-nQueens n = fullExtend n []
-
-
-
-ch old new (x:xs)
- | length (x:xs) == 0 = []
- | x == old = new:xs
- | otherwise = x : ch old new xs
-
-
-solver  :: Int -> [Int]
-solver n = check 0 n
- where
-  ch old new (x:xs)
-   | length (x:xs) == 0 = []
-   | x == old = new:xs
-   | otherwise = x : ch old new xs
-  queen = [(x-x) | x <- [0 .. n ]]
-  check i limit
-   | i < limit = [0]
-   | otherwise = [i]
-      
+queens :: Int -> Maybe Solution -- assinatura da função que retorna a possível resolução
+quueens n = fullExtend n []
